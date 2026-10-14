@@ -22,9 +22,14 @@ class DanmakuStyleTest {
         )
     }
 
+    @Test fun supportsTwentyLanes() {
+        assertEquals(20, DanmakuStyle.sanitized(maxLanes = 20).maxLanes)
+        assertEquals(12, DanmakuStyle.sanitized().maxLanes)
+    }
+
     @Test fun clampsValuesAboveMaximum() {
         assertEquals(
-            DanmakuStyle(48, 3, 0, 100, 12, "cyan", "dark_gray"),
+            DanmakuStyle(48, 3, 0, 100, 20, "cyan", "dark_gray"),
             DanmakuStyle.sanitized(100, -1, -2, 150, 999, "cyan", "dark_gray")
         )
     }

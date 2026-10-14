@@ -27,7 +27,7 @@ internal data class DanmakuStyle(
             travelTimeSeconds = travelTimeSeconds.coerceIn(3, 15),
             outlineWidthDp = outlineWidthDp.coerceIn(0, 6),
             opacityPercent = opacityPercent.coerceIn(20, 100),
-            maxLanes = maxLanes.coerceIn(1, 12),
+            maxLanes = maxLanes.coerceIn(1, 20),
             textColorName = textColorName?.takeIf { it in setOf("white", "yellow", "cyan", "green", "pink") } ?: "white",
             outlineColorName = outlineColorName?.takeIf { it in setOf("black", "white", "dark_gray") } ?: "black",
         )
