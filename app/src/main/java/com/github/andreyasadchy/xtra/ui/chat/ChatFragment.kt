@@ -709,6 +709,7 @@ class ChatFragment : BaseNetworkFragment(), MessageClickedDialog.OnButtonClickLi
                         repeatOnLifecycle(Lifecycle.State.STARTED) {
                             viewModel.newMessage.collect { result ->
                                 val message = result.first
+                                (parentFragment as? PlayerFragment)?.onDanmakuMessage(message)
                                 val lastIndex = result.second
                                 val removeCount = result.third
                                 adapter?.let { adapter ->
@@ -749,6 +750,7 @@ class ChatFragment : BaseNetworkFragment(), MessageClickedDialog.OnButtonClickLi
                     viewLifecycleOwner.lifecycleScope.launch {
                         repeatOnLifecycle(Lifecycle.State.STARTED) {
                             viewModel.removeMessages.collect { size ->
+                                (parentFragment as? PlayerFragment)?.clearDanmaku()
                                 adapter?.notifyItemRangeRemoved(0, size)
                             }
                         }

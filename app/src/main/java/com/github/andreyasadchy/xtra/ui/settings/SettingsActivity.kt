@@ -120,6 +120,9 @@ class SettingsActivity : AppCompatActivity() {
             windowInsets
         }
         val navController = (supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment).navController
+        if (savedInstanceState == null && intent.getBooleanExtra(OPEN_PLAYER_SETTINGS, false)) {
+            navController.navigate(SettingsNavGraphDirections.actionGlobalPlayerSettingsFragment())
+        }
         val appBarConfiguration = AppBarConfiguration(setOf(), fallbackOnNavigateUpListener = {
             onBackPressedDispatcher.onBackPressed()
             true
@@ -258,6 +261,7 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         const val KEY_CHANGED = "changed"
+        const val OPEN_PLAYER_SETTINGS = "open_player_settings"
     }
 
     class SettingsFragment : MaterialPreferenceFragment() {

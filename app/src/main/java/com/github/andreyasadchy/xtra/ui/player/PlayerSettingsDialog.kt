@@ -1,5 +1,6 @@
 package com.github.andreyasadchy.xtra.ui.player
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.media3.common.Tracks
 import com.github.andreyasadchy.xtra.R
 import com.github.andreyasadchy.xtra.databinding.PlayerSettingsBinding
+import com.github.andreyasadchy.xtra.ui.settings.SettingsActivity
 import com.github.andreyasadchy.xtra.util.C
 import com.github.andreyasadchy.xtra.util.TwitchApiHelper
 import com.github.andreyasadchy.xtra.util.prefs
@@ -131,6 +133,31 @@ class PlayerSettingsDialog : BottomSheetDialogFragment() {
                         (parentFragment as? PlayerFragment)?.showPlaylistTags(false)
                         dismiss()
                     }
+                }
+            }
+            if ((type == BasePlaybackService.STREAM || type == BasePlaybackService.VIDEO ||
+                    type == BasePlaybackService.CLIP || type == BasePlaybackService.OFFLINE_VIDEO) &&
+                !requireContext().prefs().getBoolean(C.CHAT_DISABLE, false)
+            ) {
+                menuDanmaku.visibility = View.VISIBLE
+                menuDanmaku.text = getString(
+                    if (requireContext().prefs().getBoolean(C.PLAYER_DANMAKU, false)) {
+                        R.string.hide_danmaku
+                    } else {
+                        R.string.show_danmaku
+                    }
+                )
+                menuDanmaku.setOnClickListener {
+                    (parentFragment as? PlayerFragment)?.toggleDanmaku()
+                    dismiss()
+                }
+                menuDanmakuSettings.visibility = View.VISIBLE
+                menuDanmakuSettings.setOnClickListener {
+                    startActivity(
+                        Intent(requireContext(), SettingsActivity::class.java)
+                            .putExtra(SettingsActivity.OPEN_PLAYER_SETTINGS, true)
+                    )
+                    dismiss()
                 }
             }
             if (type == BasePlaybackService.VIDEO) {

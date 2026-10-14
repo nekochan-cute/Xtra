@@ -115,6 +115,7 @@ dependencies {
     implementation(libs.glide.okhttp)
     implementation(libs.glide.webpdecoder)
 
+    testImplementation("junit:junit:4.13.2")
     implementation(libs.coroutines)
 }
 
