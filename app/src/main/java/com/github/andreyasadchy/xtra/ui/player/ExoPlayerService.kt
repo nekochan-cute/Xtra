@@ -326,6 +326,10 @@ class ExoPlayerService : BasePlaybackService() {
                                     }
                                 }
                             } else {
+                                if (useVaft && !videoSwapActive) {
+                                    stopVideoSwap = false
+                                    currentVideoSwapItem = 0
+                                }
                                 when {
                                     proxyMediaPlaylist -> {
                                         if (adDelayJob == null) {
@@ -2130,6 +2134,10 @@ class ExoPlayerService : BasePlaybackService() {
 
     private fun stopSecondaryPlayer() {
         vaftCandidateVerified = false
+        if (useVaft && !playingAds) {
+            stopVideoSwap = false
+            currentVideoSwapItem = 0
+        }
         proxyMediaPlaylist = false
         videoSwapActive = false
         secondaryPlayerTimerJob?.cancel()
