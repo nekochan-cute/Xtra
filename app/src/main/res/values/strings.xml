@@ -596,6 +596,9 @@
     <string name="stopping_video_swap">Stopping video swap</string>
     <string name="starting_proxy">Starting proxy</string>
     <string name="stopping_proxy">Stopping proxy</string>
+    <string name="use_vaft">VAFT-style automatic ad avoidance (ExoPlayer)</string>
+    <string name="vaft_summary">When an ad starts, try embed, popout and autoplay playback tokens. Hide the ad if no clean stream is found. Disable custom proxies and video swap to use this mode.</string>
+    <string name="vaft_no_clean_stream">No ad-free stream found; hiding ads until normal playback resumes</string>
     <string name="danmaku">Floating comments (danmaku)</string>
     <string name="show_danmaku">Show floating comments</string>
     <string name="hide_danmaku">Hide floating comments</string>

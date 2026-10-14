@@ -134,6 +134,7 @@ class ExoPlayerService : BasePlaybackService() {
     private var proxyMediaPlaylist = false
     private var stopProxy = false
     private var useVideoSwap = false
+    private var useVaft = false
     private var currentVideoSwapItem = 0
     private var videoSwapActive = false
     private var stopVideoSwap = false
@@ -252,7 +253,7 @@ class ExoPlayerService : BasePlaybackService() {
                     if (type == STREAM) {
                         val useProxy = useStreamProxy && !stopProxy && streamProxyList?.getOrNull(currentStreamProxy)?.proxyMediaPlaylist == true
                         val useVideoSwap = useVideoSwap && !stopVideoSwap
-                        val hideAds = prefs().getBoolean(C.PLAYER_HIDE_ADS, false)
+                        val hideAds = prefs().getBoolean(C.PLAYER_HIDE_ADS, false) || (useVaft && hidden)
                         if (useProxy || useVideoSwap || hideAds) {
                             val playlist = (player?.currentManifest as? HlsManifest)?.mediaPlaylist
                             val ads = checkPlaylist(playlist)
@@ -770,11 +771,18 @@ class ExoPlayerService : BasePlaybackService() {
                                     && (it.proxyPlaybackAccessToken || it.proxyMultivariantPlaylist || it.proxyMediaPlaylist)
                         }.sortedBy { it.position }
                     }
-                    useVideoSwap = !useCustomProxy && !useStreamProxy && prefs().getBoolean(C.PLAYER_USE_VIDEO_SWAP, false)
+                    useVaft = !useCustomProxy && !useStreamProxy && prefs().getBoolean(C.PLAYER_VAFT, false)
+                    useVideoSwap = useVaft || (!useCustomProxy && !useStreamProxy && prefs().getBoolean(C.PLAYER_USE_VIDEO_SWAP, false))
                     if (useVideoSwap) {
-                        videoSwapList = xtraModule.playerRepository.getVideoSwapItems().filter {
-                            it.enabled && !it.platform.isNullOrBlank() && !it.playerType.isNullOrBlank()
-                        }.sortedBy { it.position }
+                        videoSwapList = if (useVaft) {
+                            VaftPolicy.backupPlayerTypes.mapIndexed { index, candidate ->
+                                VideoSwap(platform = candidate.platform, playerType = candidate.playerType, position = index)
+                            }
+                        } else {
+                            xtraModule.playerRepository.getVideoSwapItems().filter {
+                                it.enabled && !it.platform.isNullOrBlank() && !it.playerType.isNullOrBlank()
+                            }.sortedBy { it.position }
+                        }
                     }
                     loadStream(restorePauseState)
                 }
@@ -1661,7 +1669,22 @@ class ExoPlayerService : BasePlaybackService() {
             val playerListener = object : Player.Listener {
                 override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                     val playlist = (secondaryPlayer?.currentManifest as? HlsManifest)?.mediaPlaylist
-                    val ads = checkPlaylist(playlist)
+                    if (useVaft && videoSwapActive && playlist == null) return
+                    val ads = checkPlaylist(playlist) ||
+                        (useVaft && VaftPolicy.containsAdMarkers(
+                            playlist?.tags.orEmpty(), playlist?.segments?.map { it.title }.orEmpty()
+                        ))
+                    if (!ads && useVaft && videoSwapActive && playlist != null) {
+                        // Do not display candidate video or enable audio before checking its playlist.
+                        secondaryPlayer?.let { candidate ->
+                            if (quality?.name != VideoQuality.AUDIO_ONLY_QUALITY) {
+                                candidate.trackSelectionParameters = candidate.trackSelectionParameters.buildUpon()
+                                    .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO, false).build()
+                            }
+                            candidate.volume = prefs().getInt(C.PLAYER_VOLUME, 100) / 100f
+                            serviceListener?.setPlayerSurface(true)
+                        }
+                    }
                     if (ads) {
                         when {
                             proxyMediaPlaylist -> {
@@ -1683,24 +1706,33 @@ class ExoPlayerService : BasePlaybackService() {
                                 }
                             }
                             videoSwapActive -> {
-                                currentVideoSwapItem += 1
-                                if (videoSwapList?.getOrNull(currentVideoSwapItem) != null) {
-                                    secondaryPlayerTimerJob?.cancel()
-                                    secondaryPlayerTimerJob = lifecycleScope.launch {
-                                        delay(3.minutes)
-                                        videoSwapActive = false
-                                        serviceListener?.toast(R.string.stopping_video_swap, Toast.LENGTH_SHORT)
-                                        stopSecondaryPlayer2()
-                                        secondaryPlayerTimerJob = null
-                                    }
-                                    startSecondaryPlayer(false)
+                                if (useVaft) {
+                                    advanceVaftCandidate()
                                 } else {
-                                    stopVideoSwap = true
-                                    serviceListener?.toast(R.string.stopping_video_swap, Toast.LENGTH_SHORT)
-                                    stopSecondaryPlayer()
+                                    currentVideoSwapItem += 1
+                                    if (videoSwapList?.getOrNull(currentVideoSwapItem) != null) {
+                                        secondaryPlayerTimerJob?.cancel()
+                                        secondaryPlayerTimerJob = lifecycleScope.launch {
+                                            delay(3.minutes)
+                                            videoSwapActive = false
+                                            serviceListener?.toast(R.string.stopping_video_swap, Toast.LENGTH_SHORT)
+                                            stopSecondaryPlayer2()
+                                            secondaryPlayerTimerJob = null
+                                        }
+                                        startSecondaryPlayer(false)
+                                    } else {
+                                        stopVideoSwap = true
+                                        serviceListener?.toast(R.string.stopping_video_swap, Toast.LENGTH_SHORT)
+                                        stopSecondaryPlayer()
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+                override fun onPlayerError(error: PlaybackException) {
+                    if (useVaft && videoSwapActive) {
+                        advanceVaftCandidate()
                     }
                 }
             }
@@ -2053,15 +2085,37 @@ class ExoPlayerService : BasePlaybackService() {
                         }.build()
                     )
                 )
-                player.volume = prefs().getInt(C.PLAYER_VOLUME, 100) / 100f
+                player.volume = if (useVaft) 0f else prefs().getInt(C.PLAYER_VOLUME, 100) / 100f
+                if (useVaft && quality?.name != VideoQuality.AUDIO_ONLY_QUALITY) {
+                    player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+                        .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO, true).build()
+                }
                 player.setPlaybackSpeed(1f)
+                secondaryPlayer = player
                 player.prepare()
                 player.playWhenReady = true
-                secondaryPlayer = player
-                serviceListener?.setPlayerSurface(true)
+                if (!useVaft) serviceListener?.setPlayerSurface(true)
             } else {
-                stopSecondaryPlayer()
+                if (useVaft && videoSwapActive) {
+                    advanceVaftCandidate()
+                } else {
+                    stopSecondaryPlayer()
+                }
             }
+        }
+    }
+
+    private fun advanceVaftCandidate() {
+        if (!useVaft || !videoSwapActive) return
+        currentVideoSwapItem += 1
+        secondaryPlayer?.release()
+        secondaryPlayer = null
+        if (videoSwapList?.getOrNull(currentVideoSwapItem) != null) {
+            startSecondaryPlayer(false)
+        } else {
+            stopVideoSwap = true
+            serviceListener?.toast(R.string.vaft_no_clean_stream, Toast.LENGTH_LONG)
+            stopSecondaryPlayer()
         }
     }
 
@@ -2071,6 +2125,17 @@ class ExoPlayerService : BasePlaybackService() {
         secondaryPlayerTimerJob?.cancel()
         secondaryPlayerTimerJob = null
         stopSecondaryPlayer2()
+        if (useVaft && playingAds) {
+            // All VAFT candidates failed; never restore the ad video/audio.
+            hidden = true
+            player?.let { player ->
+                if (quality?.name != VideoQuality.AUDIO_ONLY_QUALITY) {
+                    player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+                        .setTrackTypeDisabled(androidx.media3.common.C.TRACK_TYPE_VIDEO, true).build()
+                }
+                player.volume = 0f
+            }
+        }
     }
 
     private fun stopSecondaryPlayer2() {

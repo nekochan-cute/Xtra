@@ -192,6 +192,7 @@ object C {
     const val PLAYER_USE_CUSTOM_PROXY = "player_use_custom_proxy"
     const val PLAYER_USE_STREAM_PROXY = "player_use_stream_proxy"
     const val PLAYER_USE_VIDEO_SWAP = "player_use_video_swap"
+    const val PLAYER_VAFT = "player_vaft"
     const val PLAYER_STREAM_HEADERS = "player_stream_headers"
     const val PLAYER_SHOW_UPTIME = "player_show_uptime"
     const val PROXY_PLAYBACK_ACCESS_TOKEN = "proxy_playback_access_token"
