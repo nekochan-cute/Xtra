@@ -8,6 +8,77 @@
         app:iconSpaceReserved="false"
         app:singleLineTitle="false" />
 
+    <PreferenceCategory
+        android:title="@string/danmaku_settings"
+        app:iconSpaceReserved="false">
+
+        <SeekBarPreference
+            android:defaultValue="20"
+            android:key="player_danmaku_text_size"
+            android:max="48"
+            android:title="@string/danmaku_text_size"
+            app:min="12"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false" />
+
+        <SeekBarPreference
+            android:defaultValue="6"
+            android:key="player_danmaku_travel_time"
+            android:max="15"
+            android:title="@string/danmaku_travel_time"
+            android:summary="@string/danmaku_travel_time_summary"
+            app:min="3"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false" />
+
+        <SeekBarPreference
+            android:defaultValue="3"
+            android:key="player_danmaku_outline_width"
+            android:max="6"
+            android:title="@string/danmaku_outline_width"
+            app:min="0"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false" />
+
+        <ListPreference
+            android:defaultValue="white"
+            android:key="player_danmaku_text_color"
+            android:entries="@array/danmakuTextColorEntries"
+            android:entryValues="@array/danmakuTextColorValues"
+            android:title="@string/danmaku_text_color"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <ListPreference
+            android:defaultValue="black"
+            android:key="player_danmaku_outline_color"
+            android:entries="@array/danmakuOutlineColorEntries"
+            android:entryValues="@array/danmakuOutlineColorValues"
+            android:title="@string/danmaku_outline_color"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+
+        <SeekBarPreference
+            android:defaultValue="100"
+            android:key="player_danmaku_opacity"
+            android:max="100"
+            android:title="@string/danmaku_opacity"
+            app:min="20"
+            app:seekBarIncrement="5"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false" />
+
+        <SeekBarPreference
+            android:defaultValue="12"
+            android:key="player_danmaku_lanes"
+            android:max="12"
+            android:title="@string/danmaku_lanes"
+            app:min="1"
+            app:showSeekBarValue="true"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
     <SwitchPreferenceCompat
         android:defaultValue="true"
         android:key="player_disable_background_video"

@@ -602,4 +602,20 @@
     <string name="danmaku">Floating comments (danmaku)</string>
     <string name="show_danmaku">Show floating comments</string>
     <string name="hide_danmaku">Hide floating comments</string>
+    <string name="danmaku_settings">Floating comment appearance</string>
+    <string name="danmaku_text_size">Text size (sp)</string>
+    <string name="danmaku_travel_time">Travel time (seconds)</string>
+    <string name="danmaku_travel_time_summary">Lower value means faster comments</string>
+    <string name="danmaku_outline_width">Outline thickness (dp; 0 disables)</string>
+    <string name="danmaku_text_color">Text color</string>
+    <string name="danmaku_outline_color">Outline color</string>
+    <string name="danmaku_opacity">Opacity (%)</string>
+    <string name="danmaku_lanes">Maximum comment rows</string>
+    <string name="danmaku_color_white">White</string>
+    <string name="danmaku_color_yellow">Yellow</string>
+    <string name="danmaku_color_cyan">Cyan</string>
+    <string name="danmaku_color_green">Green</string>
+    <string name="danmaku_color_pink">Pink</string>
+    <string name="danmaku_color_black">Black</string>
+    <string name="danmaku_color_dark_gray">Dark gray</string>
 </resources>

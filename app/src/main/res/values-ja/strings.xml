@@ -583,4 +583,20 @@
     <string name="use_vaft">VAFT方式の広告回避（ExoPlayer）</string>
     <string name="vaft_summary">広告中にembed・popout・autoplayの再生トークンを自動で試します。広告なしの配信を取得できない場合は広告を非表示にします。カスタムプロキシと動画切り替えを無効にして使用してください。</string>
     <string name="vaft_no_clean_stream">広告なしの配信が見つかりません。通常の再生に戻るまで広告を非表示にします</string>
+    <string name="danmaku_settings">流れるコメントの表示設定</string>
+    <string name="danmaku_text_size">文字サイズ（sp）</string>
+    <string name="danmaku_travel_time">流れる時間（秒）</string>
+    <string name="danmaku_travel_time_summary">小さいほど速く流れます</string>
+    <string name="danmaku_outline_width">縁取りの太さ（dp・0でなし）</string>
+    <string name="danmaku_text_color">文字色</string>
+    <string name="danmaku_outline_color">縁取りの色</string>
+    <string name="danmaku_opacity">不透明度（%）</string>
+    <string name="danmaku_lanes">最大表示行数</string>
+    <string name="danmaku_color_white">白</string>
+    <string name="danmaku_color_yellow">黄</string>
+    <string name="danmaku_color_cyan">水色</string>
+    <string name="danmaku_color_green">緑</string>
+    <string name="danmaku_color_pink">ピンク</string>
+    <string name="danmaku_color_black">黒</string>
+    <string name="danmaku_color_dark_gray">濃い灰色</string>
 </resources>
