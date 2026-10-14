@@ -135,6 +135,7 @@ class ExoPlayerService : BasePlaybackService() {
     private var stopProxy = false
     private var useVideoSwap = false
     private var useVaft = false
+    private var vaftCandidateVerified = false
     private var currentVideoSwapItem = 0
     private var videoSwapActive = false
     private var stopVideoSwap = false
@@ -772,6 +773,9 @@ class ExoPlayerService : BasePlaybackService() {
                         }.sortedBy { it.position }
                     }
                     useVaft = !useCustomProxy && !useStreamProxy && prefs().getBoolean(C.PLAYER_VAFT, false)
+                    currentVideoSwapItem = 0
+                    stopVideoSwap = false
+                    vaftCandidateVerified = false
                     useVideoSwap = useVaft || (!useCustomProxy && !useStreamProxy && prefs().getBoolean(C.PLAYER_USE_VIDEO_SWAP, false))
                     if (useVideoSwap) {
                         videoSwapList = if (useVaft) {
@@ -1666,16 +1670,19 @@ class ExoPlayerService : BasePlaybackService() {
             val videoSwap = if (!proxy) {
                 videoSwapList?.getOrNull(currentVideoSwapItem)
             } else null
+            var activeCandidate: ExoPlayer? = null
             val playerListener = object : Player.Listener {
                 override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+                    if (useVaft && secondaryPlayer !== activeCandidate) return
                     val playlist = (secondaryPlayer?.currentManifest as? HlsManifest)?.mediaPlaylist
                     if (useVaft && videoSwapActive && playlist == null) return
                     val ads = checkPlaylist(playlist) ||
                         (useVaft && VaftPolicy.containsAdMarkers(
                             playlist?.tags.orEmpty(), playlist?.segments?.map { it.title }.orEmpty()
                         ))
-                    if (!ads && useVaft && videoSwapActive && playlist != null) {
+                    if (!ads && useVaft && videoSwapActive && playlist != null && !vaftCandidateVerified) {
                         // Do not display candidate video or enable audio before checking its playlist.
+                        vaftCandidateVerified = true
                         secondaryPlayer?.let { candidate ->
                             if (quality?.name != VideoQuality.AUDIO_ONLY_QUALITY) {
                                 candidate.trackSelectionParameters = candidate.trackSelectionParameters.buildUpon()
@@ -1731,7 +1738,7 @@ class ExoPlayerService : BasePlaybackService() {
                     }
                 }
                 override fun onPlayerError(error: PlaybackException) {
-                    if (useVaft && videoSwapActive) {
+                    if (useVaft && videoSwapActive && secondaryPlayer === activeCandidate) {
                         advanceVaftCandidate()
                     }
                 }
@@ -1752,6 +1759,7 @@ class ExoPlayerService : BasePlaybackService() {
                 setSeekBackIncrementMs((prefs().getString(C.PLAYER_REWIND, "10")?.toLongOrNull() ?: 10) * 1000)
                 setSeekForwardIncrementMs((prefs().getString(C.PLAYER_FORWARD, "10")?.toLongOrNull() ?: 10) * 1000)
             }.build()
+            activeCandidate = player
             player.addListener(playerListener)
             val url = if (streamProxy != null) {
                 quality?.url
@@ -2107,6 +2115,7 @@ class ExoPlayerService : BasePlaybackService() {
 
     private fun advanceVaftCandidate() {
         if (!useVaft || !videoSwapActive) return
+        vaftCandidateVerified = false
         currentVideoSwapItem += 1
         secondaryPlayer?.release()
         secondaryPlayer = null
@@ -2120,6 +2129,7 @@ class ExoPlayerService : BasePlaybackService() {
     }
 
     private fun stopSecondaryPlayer() {
+        vaftCandidateVerified = false
         proxyMediaPlaylist = false
         videoSwapActive = false
         secondaryPlayerTimerJob?.cancel()
