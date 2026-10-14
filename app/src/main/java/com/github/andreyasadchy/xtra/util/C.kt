@@ -133,6 +133,7 @@ object C {
     const val PLAYER_AUDIO_COMPRESSOR_BUTTON = "player_audio_compressor_button"
     const val PLAYER_GAMES_BUTTON = "player_gamesbutton"
     const val PLAYER_VIEWER_LIST = "player_viewerlist"
+    const val PLAYER_DANMAKU = "player_danmaku"
     const val PLAYER_MENU = "player_menu"
     const val PLAYER_MENU_QUALITY = "player_menu_quality"
     const val PLAYER_MENU_SPEED = "player_menu_speed"

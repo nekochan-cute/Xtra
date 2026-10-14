@@ -133,6 +133,23 @@ class PlayerSettingsDialog : BottomSheetDialogFragment() {
                     }
                 }
             }
+            if ((type == BasePlaybackService.STREAM || type == BasePlaybackService.VIDEO ||
+                    type == BasePlaybackService.CLIP || type == BasePlaybackService.OFFLINE_VIDEO) &&
+                !requireContext().prefs().getBoolean(C.CHAT_DISABLE, false)
+            ) {
+                menuDanmaku.visibility = View.VISIBLE
+                menuDanmaku.text = getString(
+                    if (requireContext().prefs().getBoolean(C.PLAYER_DANMAKU, false)) {
+                        R.string.hide_danmaku
+                    } else {
+                        R.string.show_danmaku
+                    }
+                )
+                menuDanmaku.setOnClickListener {
+                    (parentFragment as? PlayerFragment)?.toggleDanmaku()
+                    dismiss()
+                }
+            }
             if (type == BasePlaybackService.VIDEO) {
                 if (arguments.getBoolean(VOD_GAMES)) {
                     setVodGames()

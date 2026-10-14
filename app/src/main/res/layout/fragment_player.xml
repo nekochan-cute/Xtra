@@ -33,6 +33,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <com.github.andreyasadchy.xtra.ui.view.DanmakuOverlay
+                android:id="@+id/danmakuOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
+
             <com.google.android.material.progressindicator.CircularProgressIndicator
                 android:id="@+id/bufferingIndicator"
                 android:layout_width="wrap_content"

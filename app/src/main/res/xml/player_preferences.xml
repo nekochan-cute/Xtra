@@ -2,6 +2,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="player_danmaku"
+        android:title="@string/danmaku"
+        app:iconSpaceReserved="false"
+        app:singleLineTitle="false" />
+
+    <SwitchPreferenceCompat
         android:defaultValue="true"
         android:key="player_disable_background_video"
         android:title="@string/disable_background_video"

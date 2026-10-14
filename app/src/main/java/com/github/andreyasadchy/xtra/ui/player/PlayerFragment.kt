@@ -59,6 +59,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.github.andreyasadchy.xtra.R
 import com.github.andreyasadchy.xtra.databinding.FragmentPlayerBinding
+import com.github.andreyasadchy.xtra.model.chat.ChatMessage
 import com.github.andreyasadchy.xtra.model.VideoQuality
 import com.github.andreyasadchy.xtra.model.ui.Video
 import com.github.andreyasadchy.xtra.ui.channel.ChannelPagerFragmentDirections
@@ -242,6 +243,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
             aspectRatioFrameLayout.setAspectRatio(16f / 9f)
             initLayout()
             changePlayerMode()
+            updateDanmakuVisibility()
             val viewConfiguration = ViewConfiguration.get(requireContext())
             val touchSlop = viewConfiguration.scaledTouchSlop
             val touchSlopRange = -touchSlop.toFloat()..touchSlop.toFloat()
@@ -1423,6 +1425,33 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
         }
     }
 
+    /** Receive only freshly emitted chat messages (not the recent-message history). */
+    fun onDanmakuMessage(message: ChatMessage) {
+        if (message.type != ChatMessage.USER_MESSAGE && message.type != ChatMessage.REPLY_MESSAGE) return
+        message.message?.let { _binding?.danmakuOverlay?.addComment(it) }
+    }
+
+    fun clearDanmaku() {
+        _binding?.danmakuOverlay?.clear()
+    }
+
+    fun toggleDanmaku() {
+        val preferences = requireContext().prefs()
+        preferences.edit {
+            putBoolean(C.PLAYER_DANMAKU, !preferences.getBoolean(C.PLAYER_DANMAKU, false))
+        }
+        updateDanmakuVisibility()
+    }
+
+    private fun updateDanmakuVisibility() {
+        val inPip = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && requireActivity().isInPictureInPictureMode
+        val visible = isMaximized && !inPip &&
+            !requireContext().prefs().getBoolean(C.CHAT_DISABLE, false) &&
+            requireContext().prefs().getBoolean(C.PLAYER_DANMAKU, false)
+        binding.danmakuOverlay.visibility = if (visible) View.VISIBLE else View.GONE
+        if (!visible) binding.danmakuOverlay.clear()
+    }
+
     fun hideChat() {
         isChatOpen = false
         hideChatLayout()
@@ -1933,6 +1962,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
 
     override fun onResume() {
         super.onResume()
+        updateDanmakuVisibility()
         val isInPIPMode = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> requireActivity().isInPictureInPictureMode
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> !useController && isMaximized
@@ -2011,16 +2041,24 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
                 useController = true
             }
         }
+        if (isInPictureInPictureMode) {
+            binding.danmakuOverlay.visibility = View.GONE
+            binding.danmakuOverlay.clear()
+        } else {
+            updateDanmakuVisibility()
+        }
     }
 
     override fun onStop() {
         super.onStop()
+        clearDanmaku()
         binding.playerControls.root.removeCallbacks(controllerHideAction)
     }
 
     fun minimize() {
         with(binding) {
             isMaximized = false
+            updateDanmakuVisibility()
             if (playbackService?.type == BasePlaybackService.STREAM && chatFragment?.emoteMenuIsVisible() == true) {
                 chatFragment?.toggleBackPressedCallback(false)
             }
@@ -2090,6 +2128,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     fun maximize() {
         with(binding) {
             isMaximized = true
+            updateDanmakuVisibility()
             requireActivity().onBackPressedDispatcher.addCallback(this@PlayerFragment, backPressedCallback)
             if (playbackService?.type == BasePlaybackService.STREAM && chatFragment?.emoteMenuIsVisible() == true) {
                 chatFragment?.toggleBackPressedCallback(true)
@@ -2369,6 +2408,7 @@ abstract class PlayerFragment : BaseNetworkFragment(), RadioButtonDialogFragment
     }
 
     override fun onDestroyView() {
+        clearDanmaku()
         super.onDestroyView()
         _binding = null
     }
