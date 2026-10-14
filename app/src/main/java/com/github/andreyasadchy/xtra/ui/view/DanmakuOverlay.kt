@@ -95,9 +95,9 @@ class DanmakuOverlay @JvmOverloads constructor(
     private fun configurePaints() {
         val alpha = (style.opacityPercent * 255 / 100).coerceIn(0, 255)
         outlinePaint.apply {
-            textSize = style.textSizeSp * scaledDensity
-            strokeWidth = style.outlineWidthDp * density
-            color = when (style.outlineColorName) {
+            textSize = this@DanmakuOverlay.style.textSizeSp * scaledDensity
+            strokeWidth = this@DanmakuOverlay.style.outlineWidthDp * density
+            color = when (this@DanmakuOverlay.style.outlineColorName) {
                 "white" -> Color.WHITE
                 "dark_gray" -> Color.DKGRAY
                 else -> Color.BLACK
@@ -105,8 +105,8 @@ class DanmakuOverlay @JvmOverloads constructor(
             this.alpha = alpha
         }
         textPaint.apply {
-            textSize = style.textSizeSp * scaledDensity
-            color = when (style.textColorName) {
+            textSize = this@DanmakuOverlay.style.textSizeSp * scaledDensity
+            color = when (this@DanmakuOverlay.style.textColorName) {
                 "yellow" -> Color.YELLOW
                 "cyan" -> Color.CYAN
                 "green" -> Color.GREEN
