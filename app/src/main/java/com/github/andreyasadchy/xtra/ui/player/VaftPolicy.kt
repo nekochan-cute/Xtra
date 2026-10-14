@@ -1,5 +1,8 @@
 package com.github.andreyasadchy.xtra.ui.player
 
+import com.github.andreyasadchy.xtra.model.VideoQuality
+import kotlin.math.abs
+
 /**
  * Native variant of the fallback strategy used by TwitchAdSolutions VAFT.
  * https://github.com/pixeltris/TwitchAdSolutions/tree/master/vaft (MIT)
@@ -15,6 +18,15 @@ internal object VaftPolicy {
         Candidate("web", "popout"),
         Candidate("android", "autoplay"),
     )
+
+    /** Prefer the current stream quality rather than blindly selecting 1080p/4K. */
+    fun closestQuality(current: VideoQuality?, backups: List<VideoQuality>): VideoQuality? {
+        val preferredHeight = current?.resolution ?: return backups.firstOrNull()
+        return backups.minWithOrNull(
+            compareBy<VideoQuality> { abs((it.resolution ?: 0) - preferredHeight) }
+                .thenBy { if (current.codecs == null || it.codecs == current.codecs) 0 else 1 }
+        )
+    }
 
     fun containsAdMarkers(tags: List<String>, segmentTitles: List<String>): Boolean {
         return tags.any { tag ->

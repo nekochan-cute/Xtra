@@ -1874,7 +1874,11 @@ class ExoPlayerService : BasePlaybackService() {
                                     add(VideoQuality(VideoQuality.AUDIO_ONLY_QUALITY, audio.resolution, audio.frameRate, audio.bitrate, audio.codecs, audio.url))
                                 }
                             }
-                        qualities.firstOrNull()?.url
+                        if (useVaft) {
+                            VaftPolicy.closestQuality(quality, qualities)?.url
+                        } else {
+                            qualities.firstOrNull()?.url
+                        }
                     } else null
                 } else null
             }

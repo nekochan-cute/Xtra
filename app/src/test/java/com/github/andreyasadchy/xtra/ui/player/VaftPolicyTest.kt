@@ -1,5 +1,6 @@
 package com.github.andreyasadchy.xtra.ui.player
 
+import com.github.andreyasadchy.xtra.model.VideoQuality
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -12,6 +13,18 @@ class VaftPolicyTest {
             listOf("web:embed", "web:popout", "android:autoplay"),
             VaftPolicy.backupPlayerTypes.map { "${it.platform}:${it.playerType}" }
         )
+    }
+
+    @Test
+    fun keepsCurrentPlaybackResolution() {
+        val source = VideoQuality(name = "720p", resolution = 720, codecs = "avc1")
+        val variants = listOf(
+            VideoQuality(name = "1080p", resolution = 1080),
+            VideoQuality(name = "480p", resolution = 480),
+            VideoQuality(name = "720p", resolution = 720, codecs = "avc1")
+        )
+        assertEquals("720p", VaftPolicy.closestQuality(source, variants)?.name)
+        assertEquals("1080p", VaftPolicy.closestQuality(null, variants)?.name)
     }
 
     @Test
