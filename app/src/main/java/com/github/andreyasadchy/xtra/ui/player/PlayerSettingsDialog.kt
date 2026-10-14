@@ -1,5 +1,6 @@
 package com.github.andreyasadchy.xtra.ui.player
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import androidx.core.view.isVisible
 import androidx.media3.common.Tracks
 import com.github.andreyasadchy.xtra.R
 import com.github.andreyasadchy.xtra.databinding.PlayerSettingsBinding
+import com.github.andreyasadchy.xtra.ui.settings.SettingsActivity
 import com.github.andreyasadchy.xtra.util.C
 import com.github.andreyasadchy.xtra.util.TwitchApiHelper
 import com.github.andreyasadchy.xtra.util.prefs
@@ -147,6 +149,14 @@ class PlayerSettingsDialog : BottomSheetDialogFragment() {
                 )
                 menuDanmaku.setOnClickListener {
                     (parentFragment as? PlayerFragment)?.toggleDanmaku()
+                    dismiss()
+                }
+                menuDanmakuSettings.visibility = View.VISIBLE
+                menuDanmakuSettings.setOnClickListener {
+                    startActivity(
+                        Intent(requireContext(), SettingsActivity::class.java)
+                            .putExtra(SettingsActivity.OPEN_PLAYER_SETTINGS, true)
+                    )
                     dismiss()
                 }
             }
